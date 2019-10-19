@@ -22,5 +22,8 @@ service cloud.firestore {
       allow read: if false;
       allow write;
     }
+    match /config/{config=**} {
+      allow read;
+    }
   }
 }
