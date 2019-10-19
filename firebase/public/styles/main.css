@@ -21,6 +21,25 @@ main, #messages-card {
   height: 100%;
   padding-bottom: 0;
 }
+
+.header {
+    display: flex;
+    align-items: center;
+    padding: 0 8%;
+    height: 60px;
+    box-shadow: rgba(0, 0, 0, 0.1) 0px 0px 10px;
+}
+.title {
+    font-size: 20px;
+}
+.header-logo {
+    background-image: url(/images/spaceship.png);
+    background-repeat: no-repeat;
+    width: 80px;
+    height: 50px;
+    background-size: contain;
+    margin-right: 10px;
+}
 #messages-card-container {
   height: calc(100% - 35px);
   padding-bottom: 0;
@@ -127,19 +146,28 @@ main, #messages-card {
   background: linear-gradient(white, #f9f9f9);
   justify-content: space-between;
 }
+.wp-button {
+    background: #222;
+    height: 42px;
+    display: inline-flex;
+    color: white;
+    font-weight: bold;
+    padding: 0 24px;
+    border-radius: 50vh;
+    align-items: center;
+    font-size: 14px;
+    cursor: pointer;
+    justify-content: center;
+}
+.wp-button:hover {
+    opacity: 0.7;
+}
 #user-container {
-  position: absolute;
-  display: flex;
-  flex-direction: row;
-  top: 22px;
-  width: 100%;
-  right: 0;
-  padding-left: 10px;
-  justify-content: flex-end;
-  padding-right: 10px;
+    display: flex;
+    flex-direction: row-reverse;
+    flex: 1;
 }
 #user-container #user-pic {
-  top: -3px;
   position: relative;
   display: inline-block;
   background-image: url('/images/profile_placeholder.png');
@@ -153,7 +181,9 @@ main, #messages-card {
   font-size: 16px;
   line-height: 36px;
   padding-right: 10px;
-  padding-left: 20px;
+  padding-left: 12px;
+  display: flex;
+  align-items: center;
 }
 #image-form #submitImage {
   width: auto;

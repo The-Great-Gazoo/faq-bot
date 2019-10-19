@@ -1,0 +1,76 @@
+[debug] [2019-10-19T21:52:46.345Z] ----------------------------------------------------------------------
+[debug] [2019-10-19T21:52:46.347Z] Command:       /Users/gabriellee/.nvm/versions/node/v8.12.0/bin/node /Users/gabriellee/.nvm/versions/node/v8.12.0/bin/firebase use --add
+[debug] [2019-10-19T21:52:46.347Z] CLI Version:   7.6.1
+[debug] [2019-10-19T21:52:46.347Z] Platform:      darwin
+[debug] [2019-10-19T21:52:46.347Z] Node Version:  v8.12.0
+[debug] [2019-10-19T21:52:46.347Z] Time:          Sat Oct 19 2019 17:52:46 GMT-0400 (EDT)
+[debug] [2019-10-19T21:52:46.347Z] ----------------------------------------------------------------------
+[debug] [2019-10-19T21:52:46.347Z] 
+[debug] [2019-10-19T21:52:46.352Z] > command requires scopes: ["email","openid","https://www.googleapis.com/auth/cloudplatformprojects.readonly","https://www.googleapis.com/auth/firebase","https://www.googleapis.com/auth/cloud-platform"]
+[debug] [2019-10-19T21:52:46.352Z] > authorizing via signed-in user
+[debug] [2019-10-19T21:52:46.354Z] >>> HTTP REQUEST GET https://firebase.googleapis.com/v1beta1/projects?pageSize=1000  
+ 
+[debug] [2019-10-19T21:52:48.572Z] ----------------------------------------------------------------------
+[debug] [2019-10-19T21:52:48.573Z] Command:       /Users/gabriellee/.nvm/versions/node/v8.12.0/bin/node /Users/gabriellee/.nvm/versions/node/v8.12.0/bin/firebase serve
+[debug] [2019-10-19T21:52:48.573Z] CLI Version:   7.6.1
+[debug] [2019-10-19T21:52:48.573Z] Platform:      darwin
+[debug] [2019-10-19T21:52:48.573Z] Node Version:  v8.12.0
+[debug] [2019-10-19T21:52:48.574Z] Time:          Sat Oct 19 2019 17:52:48 GMT-0400 (EDT)
+[debug] [2019-10-19T21:52:48.574Z] ----------------------------------------------------------------------
+[debug] [2019-10-19T21:52:48.574Z] 
+[debug] [2019-10-19T21:52:48.579Z] > command requires scopes: ["email","openid","https://www.googleapis.com/auth/cloudplatformprojects.readonly","https://www.googleapis.com/auth/firebase","https://www.googleapis.com/auth/cloud-platform"]
+[debug] [2019-10-19T21:52:48.579Z] > authorizing via signed-in user
+[debug] [2019-10-19T21:52:48.579Z] [iam] checking project the-great-gazoo-shop for permissions ["firebase.projects.get"]
+[debug] [2019-10-19T21:52:48.580Z] >>> HTTP REQUEST POST https://cloudresourcemanager.googleapis.com/v1/projects/the-great-gazoo-shop:testIamPermissions  
+
+[debug] [2019-10-19T21:52:48.935Z] <<< HTTP RESPONSE 200
+[debug] [2019-10-19T21:52:48.937Z] >>> HTTP REQUEST GET https://firebase.googleapis.com/v1beta1/projects/the-great-gazoo-shop  
+ 
+[debug] [2019-10-19T21:52:49.289Z] <<< HTTP RESPONSE 200
+[info] 
+[info] === Serving from '/Users/gabriellee/personal/faq-bot/firebase'...
+[info] 
+[debug] [2019-10-19T21:52:49.293Z] >>> HTTP REQUEST GET https://firebase.googleapis.com/v1beta1/projects/the-great-gazoo-shop/webApps/-/config  
+ 
+[info] ✔  functions: Using node@8 from host.
+[info] ✔  functions: Emulator started at http://localhost:5001
+[debug] [2019-10-19T21:52:49.712Z] <<< HTTP RESPONSE 200
+[info] i  functions: Watching "/Users/gabriellee/personal/faq-bot/firebase/functions" for Cloud Functions...
+[info] i  hosting: Serving hosting files from: public
+[info] ✔  hosting: Local server: http://localhost:5000
+[debug] [2019-10-19T21:52:49.930Z] [runtime-status] Functions runtime initialized. {"cwd":"/Users/gabriellee/personal/faq-bot/firebase/functions","node_version":"8.12.0"}
+[debug] [2019-10-19T21:52:49.930Z] [runtime-status] Disabled runtime features: {"functions_config_helper":true,"network_filtering":true,"timeout":true,"memory_limiting":true,"admin_stubs":true} {}
+[warn] ⚠  The Cloud Functions emulator requires the module "firebase-admin" to be installed. This package is in your package.json, but it's not available. You probably need to run "npm install" in your functions directory.
+[info] i  functions: Your functions could not be parsed due to an issue with your node_modules (see above)
+[debug] [2019-10-19T22:08:18.692Z] ----------------------------------------------------------------------
+[debug] [2019-10-19T22:08:18.693Z] Command:       /Users/gabriellee/.nvm/versions/node/v8.12.0/bin/node /Users/gabriellee/.nvm/versions/node/v8.12.0/bin/firebase serve
+[debug] [2019-10-19T22:08:18.693Z] CLI Version:   7.6.1
+[debug] [2019-10-19T22:08:18.693Z] Platform:      darwin
+[debug] [2019-10-19T22:08:18.693Z] Node Version:  v8.12.0
+[debug] [2019-10-19T22:08:18.694Z] Time:          Sat Oct 19 2019 18:08:18 GMT-0400 (EDT)
+[debug] [2019-10-19T22:08:18.694Z] ----------------------------------------------------------------------
+[debug] [2019-10-19T22:08:18.694Z] 
+[debug] [2019-10-19T22:08:18.699Z] > command requires scopes: ["email","openid","https://www.googleapis.com/auth/cloudplatformprojects.readonly","https://www.googleapis.com/auth/firebase","https://www.googleapis.com/auth/cloud-platform"]
+[debug] [2019-10-19T22:08:18.699Z] > authorizing via signed-in user
+[debug] [2019-10-19T22:08:18.699Z] [iam] checking project the-great-gazoo-shop for permissions ["firebase.projects.get"]
+[debug] [2019-10-19T22:08:18.701Z] >>> HTTP REQUEST POST https://cloudresourcemanager.googleapis.com/v1/projects/the-great-gazoo-shop:testIamPermissions  
+
+[debug] [2019-10-19T22:08:19.005Z] <<< HTTP RESPONSE 200
+[debug] [2019-10-19T22:08:19.006Z] >>> HTTP REQUEST GET https://firebase.googleapis.com/v1beta1/projects/the-great-gazoo-shop  
+ 
+[debug] [2019-10-19T22:08:19.242Z] <<< HTTP RESPONSE 200
+[info] 
+[info] === Serving from '/Users/gabriellee/personal/faq-bot/firebase'...
+[info] 
+[debug] [2019-10-19T22:08:19.245Z] >>> HTTP REQUEST GET https://firebase.googleapis.com/v1beta1/projects/the-great-gazoo-shop/webApps/-/config  
+ 
+[info] ✔  functions: Using node@8 from host.
+[info] ✔  functions: Emulator started at http://localhost:5001
+[debug] [2019-10-19T22:08:19.723Z] <<< HTTP RESPONSE 200
+[info] i  functions: Watching "/Users/gabriellee/personal/faq-bot/firebase/functions" for Cloud Functions...
+[info] i  hosting: Serving hosting files from: public
+[info] ✔  hosting: Local server: http://localhost:5000
+[debug] [2019-10-19T22:08:19.941Z] [runtime-status] Functions runtime initialized. {"cwd":"/Users/gabriellee/personal/faq-bot/firebase/functions","node_version":"8.12.0"}
+[debug] [2019-10-19T22:08:19.941Z] [runtime-status] Disabled runtime features: {"functions_config_helper":true,"network_filtering":true,"timeout":true,"memory_limiting":true,"admin_stubs":true} {}
+[warn] ⚠  The Cloud Functions emulator requires the module "firebase-admin" to be installed. This package is in your package.json, but it's not available. You probably need to run "npm install" in your functions directory.
+[info] i  functions: Your functions could not be parsed due to an issue with your node_modules (see above)
