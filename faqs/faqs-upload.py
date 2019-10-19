@@ -37,11 +37,11 @@ for line in content:
         line_num += 1
     else:
         if line_num > 1:
-            answer += "\n"
+            answer += " "
         answer += line
         line_num += 1
 
-# uncomment for diagnosis
+# uncomment for debugging
 # print(json_array)
 
 def upload_to_genesys():
@@ -49,14 +49,14 @@ def upload_to_genesys():
 
     payload = json.dumps(json_array)
 
-    url = "https://api.genesysappliedresearch.com/v2/knowledge/knowledgebases/c51a90c1-bb22-48f4-8dde-891fecdfb796/languages/en-US/documents"    
+    url = "https://api.genesysappliedresearch.com/v2/knowledge/knowledgebases/fa914326-e031-4564-a2a5-2fa08e9e4660/languages/en-US/documents"    
     
     headers = {
         'Content-Type': "application/json",
         'organizationid': "507c6b94-d35a-48ce-9937-c2e4aa69c279",
-        'token': "eyJ0eXAiOiJKV1QiLCJhbGciOiJIUzI1NiJ9.eyJvcmdJZCI6IjUwN2M2Yjk0LWQzNWEtNDhjZS05OTM3LWMyZTRhYTY5YzI3OSIsImV4cCI6MTU3MTUyMTE0MSwiaWF0IjoxNTcxNTE3NTQxfQ.MYYchq4mkWqIq4fAWwC-l3wuqJDYVQ1UdT8SqGuoDGE",
+        'token': "eyJ0eXAiOiJKV1QiLCJhbGciOiJIUzI1NiJ9.eyJvcmdJZCI6IjUwN2M2Yjk0LWQzNWEtNDhjZS05OTM3LWMyZTRhYTY5YzI3OSIsImV4cCI6MTU3MTUyNTA0MiwiaWF0IjoxNTcxNTIxNDQyfQ.wgBNbrwMPHnoxbHAtet_msMpYght3a69YGFyF2pR2pw",
         'cache-control': "no-cache",
-        'Postman-Token': "7c93c77c-a46f-4b95-bad6-d8e5db646b69"
+        'Postman-Token': "8c241e20-4177-4351-bbe9-8f9ed883ffea"
     }
 
     response = requests.request("PATCH", url, data=payload, headers=headers)
