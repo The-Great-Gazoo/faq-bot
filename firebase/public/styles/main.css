@@ -31,6 +31,9 @@ main, #messages-card {
 }
 .title {
     font-size: 20px;
+    text-overflow: ellipsis;
+    overflow: hidden;
+    white-space: pre;
 }
 .header-logo {
     background-image: url(/images/spaceship.png);
@@ -202,22 +205,15 @@ main, #messages-card {
   display: none;
 }
 @media screen and (max-width: 610px) {
-  header {
-    height: 113px;
-    padding-bottom: 80px !important;
+    .header-logo,
+  #user-name {
+      display: none !important;
   }
   #user-container {
-    top: 72px;
-    background-color: rgb(3,155,229);
-    height: 38px;
-    padding-top: 3px;
-    padding-right: 2px;
   }
   #user-container #user-pic {
-    top: 2px;
-    width: 33px;
-    height: 33px;
-    background-size: 33px;
+    min-width: 40px;
+    margin-right: 7px;
   }
 }
 .mdl-textfield__label:after {
@@ -225,8 +221,4 @@ main, #messages-card {
 }
 .mdl-textfield--floating-label.is-focused .mdl-textfield__label {
   color: #0288D1;
-}
-.mdl-button .material-icons {
-  top: -1px;
-  margin-right: 5px;
 }
