@@ -178,12 +178,13 @@ main, #messages-card {
   border-radius: 20px;
 }
 #user-container #user-name {
-  font-size: 16px;
-  line-height: 36px;
-  padding-right: 10px;
-  padding-left: 12px;
-  display: flex;
-  align-items: center;
+    font-size: 16px;
+    line-height: 36px;
+    padding-right: 10px;
+    padding-left: 8px;
+    display: flex;
+    margin-right: 12px;
+    align-items: center;
 }
 #image-form #submitImage {
   width: auto;
