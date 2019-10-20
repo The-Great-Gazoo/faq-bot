@@ -222,6 +222,15 @@ main {
 }
 #messages > *:last-child .yes-no {
     display: block;
+    cursor: pointer;
+    padding: 5px 20px;
+    margin-right: 10px;
+    background: #fff;
+    margin-top: 5px;
+    background: #d9d9d9;
+    border-radius: 5px;
+    font-weight: 500;
+    font-size: 14px;
 }
 .message img {
   max-width: 300px;
