@@ -22,7 +22,7 @@ var unsubscribeGettingHelped = false;
 
 const initMessage = `Hi $user! Welcome to Gazoo Spaceship support centre. I am your host, Gazoo, and I will be answering all your Gazoo Spaceship maintenance related questions.
 
-Some topics you can ask me are: what to do when brakes sqeak, when to do oil change, which type of wiper blades to use.
+Some topics you can ask me are: what to do when brakes squeak, when to do oil change, which type of wiper blades to use.
 
 So, how can I help you?`;
 
@@ -155,6 +155,7 @@ function saveMessage({
     name: userName,
     text: answer,
     profilePicUrl: profile,
+    senderName: getUserName(),
     timestamp: firebase.firestore.FieldValue.serverTimestamp()
   };
   if (question) {
@@ -225,16 +226,20 @@ function loadMessages() {
           deleteMessage(change.doc.id);
         } else {
           var message = change.doc.data();
-          displayMessage(
-            change.doc.id,
-            message.timestamp,
-            message.name,
-            message.text,
-            message.profilePicUrl,
-            message.imageUrl,
-            message.customization,
-            message.confidence
-          );
+          if (!isHelpingUserID) {
+            displayMessage(
+              change.doc.id,
+              message.timestamp,
+              message.name,
+              message.text,
+              message.profilePicUrl,
+              message.imageUrl,
+              message.customization,
+              message.confidence,
+              message.fromUid,
+              message.senderName
+            );
+          }
         }
       });
     }
@@ -436,7 +441,8 @@ async function onAgentJoin(value, fromUid) {
 
     saveMessage({
       answer: "Hi $user, how can I help you?",
-      uid: fromUid
+      uid: fromUid,
+      agentRequest: true
     });
 
     var queryMessages = firebase
@@ -512,7 +518,7 @@ async function onAgentResponse(value) {
       unsubscribeGettingHelped = queryAgentHelp.onSnapshot(function(snapshot) {
         snapshot.docChanges().forEach(function(change) {
           if (change.type === "added") {
-            isGettingHelpedByID = change.doc.agentId;
+            isGettingHelpedByID = change.doc.data().agentId;
           }
         });
       });
@@ -547,7 +553,12 @@ async function onMessageFormSubmit(e) {
 
   // Check that the user entered a message and is signed in.
   if (message && checkSignedInWithMessage()) {
-    agentIsTyping.style.display = "block";
+    if (isHelpingUserID || isGettingHelpedByID) {
+      agentIsTyping.style.display = "none";
+    } else {
+      agentIsTyping.style.display = "block";
+    }
+
     await saveMessage({ answer: message });
     console.log("isGettingHelpedByID", isGettingHelpedByID);
     console.log("isHelpingUserID", isHelpingUserID);
@@ -721,7 +732,8 @@ function displayMessage(
   imageUrl,
   customization,
   confidence,
-  fromUid
+  fromUid,
+  senderName
 ) {
   var div =
     document.getElementById(id) || createAndInsertMessage(id, timestamp);
@@ -737,10 +749,9 @@ function displayMessage(
 
   if (text) {
     // If the message is text.
-    const username = getUserName();
     text = text.replace(
       "$user",
-      username ? `<strong>${username}</strong>` : "user"
+      senderName ? `<strong>${senderName}</strong>` : "user"
     );
     text = text.replace(
       "$date",
