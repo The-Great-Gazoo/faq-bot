@@ -18,7 +18,9 @@
 var isLoaded = false;
 
 const initMessage = `Hi $user! Welcome to Gazoo Spaceship support centre. I am your host, Gazoo, and I will be answering all your Gazoo Spaceship maintenance related questions.
+
 Some topics you can ask me are: what to do when brakes sqeak, when to do oil change, which type of wiper blades to use.
+
 So, how can I help you?`;
 
 // Signs-in Friendly Chat.
@@ -182,14 +184,6 @@ function loadMessages() {
     return;
   }
   isLoaded = true;
-  // Create the query to load the last 12 messages and listen for new ones.
-  var queryMessages = firebase
-    .firestore()
-    .collection("users")
-    .doc(getUserID())
-    .collection("messages")
-    .orderBy("timestamp", "desc")
-    .limit(12);
 
   var queryGenesysAPI = firebase
     .firestore()
@@ -204,24 +198,42 @@ function loadMessages() {
     }
   });
 
+  // Create the query to load the last 12 messages and listen for new ones.
+  var queryMessages = firebase
+    .firestore()
+    .collection("users")
+    .doc(getUserID())
+    .collection("messages")
+    .orderBy("timestamp", "desc")
+    .limit(12);
   queryMessages.onSnapshot(function(snapshot) {
-    snapshot.docChanges().forEach(function(change) {
-      if (change.type === "removed") {
-        deleteMessage(change.doc.id);
-      } else {
-        var message = change.doc.data();
-        displayMessage(
-          change.doc.id,
-          message.timestamp,
-          message.name,
-          message.text,
-          message.profilePicUrl,
-          message.imageUrl,
-          message.customization,
-          message.confidence
-        );
-      }
-    });
+    const messageLength = snapshot.docChanges().length;
+    if (messageLength === 0) {
+      saveMessage({
+        answer: initMessage,
+        // Send as Gazoo
+        userName: genesysAPI.botname,
+        profile: gazooProfile
+      });
+    } else {
+      snapshot.docChanges().forEach(function(change) {
+        if (change.type === "removed") {
+          deleteMessage(change.doc.id);
+        } else {
+          var message = change.doc.data();
+          displayMessage(
+            change.doc.id,
+            message.timestamp,
+            message.name,
+            message.text,
+            message.profilePicUrl,
+            message.imageUrl,
+            message.customization,
+            message.confidence
+          );
+        }
+      });
+    }
   });
 }
 
