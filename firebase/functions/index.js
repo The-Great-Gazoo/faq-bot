@@ -2,7 +2,7 @@ const request = require("request");
 const functions = require('firebase-functions');
 var admin = require("firebase-admin");
 
-var serviceAccount = require("./the-great-gazoo-shop-firebase-adminsdk-vojgn-24d38f15e9.json");
+var serviceAccount = require("./.keys/gazoo-spaceships-firebase-adminsdk-7acwf-c2906d8691.json");
 
 admin.initializeApp({
   credential: admin.credential.cert(serviceAccount),
