@@ -221,7 +221,8 @@ main {
     display: none;
 }
 #messages > *:last-child .yes-no {
-    display: inline-block;
+    display: block;
+    cursor: pointer;
     padding: 5px 20px;
     margin-right: 10px;
     background: #fff;
