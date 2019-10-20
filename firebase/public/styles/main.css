@@ -221,7 +221,7 @@ main {
     display: none;
 }
 #messages > *:last-child .yes-no {
-    display: block;
+    display: flex;
     cursor: pointer;
     padding: 5px 20px;
     margin-right: 10px;
@@ -231,6 +231,9 @@ main {
     border-radius: 5px;
     font-weight: 500;
     font-size: 14px;
+    width: 60px;
+    align-items: center;
+    justify-content: center;
 }
 .message img {
   max-width: 300px;
