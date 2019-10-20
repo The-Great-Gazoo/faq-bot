@@ -81,7 +81,10 @@ async function signOut() {
   }
 
   // Sign out of Firebase.
-  firebase.auth().signOut();
+  await firebase.auth().signOut();
+
+  // reload page to clear all firestore subscriptions
+  location.reload(true);
 }
 
 // Initiate firebase auth.
@@ -488,7 +491,9 @@ async function onAgentResponse(value, recipientName) {
       .where("status", "==", "online")
       .orderBy("timestamp", "desc")
       .limit(12);
-    queryAgents.onSnapshot(function(snapshot) {
+    var unsubscribe = queryAgents.onSnapshot(function(snapshot) {
+      unsubscribe();
+
       saveMessage({
         answer: `There is ${
           snapshot.docChanges().length
