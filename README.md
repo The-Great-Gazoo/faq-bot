@@ -1,4 +1,3 @@
+# Gazoo Spaceships
 
-To run
-
-ssh -R 80:gazoo.com:80 serveo.net
+[Gazoo Spaceships](https://the-great-gazoo-shop.web.app/) - the first ever online intergalactic shop for purchasing and repairing spaceships by **The Great Gazoo** :)
