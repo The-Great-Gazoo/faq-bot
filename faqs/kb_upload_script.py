@@ -1,13 +1,18 @@
 import requests
 import json
 
-# a parser that transforms data in faqs.txt for batch uploads to Genesys server
-# for model training
+# this script parses and transforms data for batch uploads to Genesys server
+# to be used to train models
+
+# edit variables here:
+file_name = "faqs.txt"
+external_url = "https://www.mycertifiedservice.ca/auto-maintenance-faqs.html"
+access_token = "eyJ0eXAiOiJKV1QiLCJhbGciOiJIUzI1NiJ9.eyJvcmdJZCI6IjUwN2M2Yjk0LWQzNWEtNDhjZS05OTM3LWMyZTRhYTY5YzI3OSIsImV4cCI6MTU3MTU1ODQ4MiwiaWF0IjoxNTcxNTU0ODgyfQ.GHTUV-t59dMGY-AsHKmGWMMwX-2w744_7rSIbY_2aBY"
+kb_id = "04e80662-d179-4da4-a24b-f5e055dbd71e"
 
 json_array = []
-external_url = "https://www.mycertifiedservice.ca/auto-maintenance-faqs.html"
 
-with open("faqs.txt") as lines:
+with open(file_name) as lines:
     content = lines.read().splitlines()
 
 def build_doc(question, answer):
@@ -41,7 +46,7 @@ for line in content:
         answer += line
         line_num += 1
 
-# uncomment for debugging
+# uncomment for debugging, should check this before uploading to server
 # print(json_array)
 
 def upload_to_genesys():
@@ -49,14 +54,13 @@ def upload_to_genesys():
 
     payload = json.dumps(json_array)
 
-    url = "https://api.genesysappliedresearch.com/v2/knowledge/knowledgebases/fa914326-e031-4564-a2a5-2fa08e9e4660/languages/en-US/documents"    
+    url = f"https://api.genesysappliedresearch.com/v2/knowledge/knowledgebases/{kb_id}/languages/en-US/documents"    
     
     headers = {
         'Content-Type': "application/json",
         'organizationid': "507c6b94-d35a-48ce-9937-c2e4aa69c279",
-        'token': "eyJ0eXAiOiJKV1QiLCJhbGciOiJIUzI1NiJ9.eyJvcmdJZCI6IjUwN2M2Yjk0LWQzNWEtNDhjZS05OTM3LWMyZTRhYTY5YzI3OSIsImV4cCI6MTU3MTUyNTA0MiwiaWF0IjoxNTcxNTIxNDQyfQ.wgBNbrwMPHnoxbHAtet_msMpYght3a69YGFyF2pR2pw",
-        'cache-control': "no-cache",
-        'Postman-Token': "8c241e20-4177-4351-bbe9-8f9ed883ffea"
+        'token': access_token,
+        'cache-control': "no-cache"
     }
 
     response = requests.request("PATCH", url, data=payload, headers=headers)
