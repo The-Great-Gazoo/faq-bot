@@ -43,12 +43,14 @@ main, #messages-card {
     background-size: contain;
     margin-right: 10px;
 }
+
 #messages-card-container {
-  height: calc(100% - 35px);
+  height: calc(100% - 25px);
   padding-bottom: 0;
 }
 #messages-card {
   margin-top: 15px;
+    margin: 0 16%;
 }
 .mdl-layout__header-row span {
   margin-left: 15px;
@@ -74,11 +76,11 @@ main, #messages-card {
   padding-bottom: 0;
 }
 #messages {
-  overflow-y: auto;
-  margin-bottom: 10px;
-  height: calc(100% - 80px);
-  display: flex;
-  flex-direction: column;
+    overflow-y: auto;
+    margin-bottom: 10px;
+    height: calc(100% - 86px);
+    display: flex;
+    flex-direction: column;
 }
 #message-filler {
   flex-grow: 1;
@@ -113,6 +115,7 @@ main, #messages-card {
   display: table-cell;
   width: calc(100% - 40px);
   padding: 5px 0 5px 10px;
+  font-size: 15px;
 }
 .message-container .name {
   display: inline-block;
@@ -168,6 +171,7 @@ main, #messages-card {
 #user-container {
     display: flex;
     flex-direction: row-reverse;
+    align-items: center;
     flex: 1;
 }
 #user-container #user-pic {
@@ -175,10 +179,10 @@ main, #messages-card {
   display: inline-block;
   background-image: url('/images/profile_placeholder.png');
   background-repeat: no-repeat;
-  width: 40px;
-  height: 40px;
-  background-size: 40px;
-  border-radius: 20px;
+  width: 30px;
+  height: 30px;
+  background-size: 30px;
+  border-radius: 15px;
 }
 #user-container #user-name {
     font-size: 16px;
@@ -212,8 +216,11 @@ main, #messages-card {
   #user-container {
   }
   #user-container #user-pic {
-    min-width: 40px;
+    min-width: 30px;
     margin-right: 7px;
+  }
+  #messages {
+      padding: 0;
   }
 }
 .mdl-textfield__label:after {

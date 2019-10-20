@@ -80,11 +80,13 @@
         <div class="mdl-card__supporting-text mdl-color-text--grey-600">
           <div id="messages">
           </div>
+          <div style="display:none;" id="agent-typing">Gazoo agent is typing...</div>
           <form id="message-form" action="#">
             <div class="mdl-textfield mdl-js-textfield mdl-textfield--floating-label">
-              <input class="mdl-textfield__input" type="text" id="message" autocomplete="off">
-              <label class="mdl-textfield__label" for="message">Message...</label>
+                <input class="mdl-textfield__input" type="text" id="message" autocomplete="off">
+                <label class="mdl-textfield__label" for="message">Message...</label>
             </div>
+        
             <button id="submit" disabled type="submit" class="wp-button">
               Send
             </button>
