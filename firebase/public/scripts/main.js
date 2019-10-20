@@ -21,30 +21,69 @@ var isLoaded = false;
 let genesysAPI;
 const gazooProfile = `/images/gazoo-avatar.png`;
 
-function signIn() {
+async function signIn() {
   // Sign into Firebase using popup auth & Google as the identity provider.
   var provider = new firebase.auth.GoogleAuthProvider();
-  firebase.auth().signInWithPopup(provider);
+  await firebase.auth().signInWithPopup(provider);
+
+  var queryAgent = firebase
+    .firestore()
+    .collection("agents")
+    .doc(getUserEmail());
+
+  queryAgent.get().then(doc => {
+    if (doc.exists) {
+      var agentData = doc.data();
+
+      if (agentData.status === "online") {
+        var timestamp = Date.now();
+        var agentTimestamp = agentData.timestamp.toDate().getTime();
+
+        // only update agent data in firestore every 15mins
+        if (agentTimestamp < timestamp - 15 * 60) {
+          return;
+        }
+      }
+
+      firebase
+        .firestore()
+        .collection("agents")
+        .doc(doc.id)
+        .update({
+          uid: getUserID(),
+          status: "online",
+          timestamp: firebase.firestore.FieldValue.serverTimestamp()
+        });
+
+      setUserAsGazooAgent();
+    }
+  });
+
 }
 
 // Signs-out of Friendly Chat.
 async function signOut() {
+  var uid = getUserID();
+  var userEmail = getUserEmail();
+
   const doc = await firebase
     .firestore()
     .collection("agents")
-    .doc(getUserEmail())
+    .doc(userEmail)
     .get();
+
   if (doc.exists) {
     await firebase
       .firestore()
       .collection("agents")
       .doc(doc.id)
       .update({
-        uid: getUserID(),
+        uid: uid,
         status: "offline",
         timestamp: firebase.firestore.FieldValue.serverTimestamp()
       });
   }
+
   // Sign out of Firebase.
   firebase.auth().signOut();
 }
@@ -126,6 +165,10 @@ function saveMessage({
 
 // Loads chat messages history and listens for upcoming ones.
 function loadMessages() {
+  if (!firebase.auth().currentUser) {
+    return;
+  }
+  isLoaded = true;
   // Create the query to load the last 12 messages and listen for new ones.
   var queryMessages = firebase
     .firestore()
@@ -140,41 +183,12 @@ function loadMessages() {
     .collection("config")
     .doc("genesys-api");
 
-  var queryAgent = firebase
-    .firestore()
-    .collection("agents")
-    .doc(getUserEmail());
 
   // Start listening to the query.
   queryGenesysAPI.onSnapshot(doc => {
     if (doc.exists) {
       genesysAPI = doc.data();
       console.log(genesysAPI);
-    }
-  });
-
-  queryAgent.get().then(doc => {
-    if (doc.exists) {
-      setUserAsGazooAgent();
-      var agentData = doc.data();
-
-      var timestamp = Date.now();
-      var agentTimestamp = agentData.timestamp.toDate().getTime();
-
-      // only update agent data in firestore every 15mins
-      if (agentTimestamp < timestamp - 15 * 60) {
-        return;
-      }
-
-      firebase
-        .firestore()
-        .collection("agents")
-        .doc(doc.id)
-        .update({
-          uid: getUserID(),
-          status: "online",
-          timestamp: firebase.firestore.FieldValue.serverTimestamp()
-        });
     }
   });
 
@@ -242,14 +256,14 @@ function saveImageMessage(file) {
 
 // Saves the messaging device token to the datastore.
 function saveMessagingDeviceToken() {
-  firebase
+  return firebase
     .messaging()
     .getToken()
     .then(function(currentToken) {
       if (currentToken) {
         console.log("Got FCM device token:", currentToken);
         // Saving the Device Token to the datastore.
-        firebase
+        return firebase
           .firestore()
           .collection("fcmTokens")
           .doc(currentToken)
@@ -412,7 +426,7 @@ function clearMessageField() {
 }
 
 // Triggers when the auth state change for instance when the user signs-in or signs-out.
-function authStateObserver(user) {
+async function authStateObserver(user) {
   if (user) {
     // User is signed in!
     // Get the signed-in user's profile pic and name.
@@ -433,7 +447,7 @@ function authStateObserver(user) {
     signInButtonElement.setAttribute("hidden", "true");
 
     // We save the Firebase Messaging Device token and enable notifications.
-    saveMessagingDeviceToken();
+    await saveMessagingDeviceToken();
   } else {
     // User is signed out!
     // Hide user's profile and sign-out button.
@@ -445,7 +459,6 @@ function authStateObserver(user) {
     signInButtonElement.removeAttribute("hidden");
   }
   if (!isLoaded) {
-    isLoaded = true;
     loadMessages();
   }
 }
