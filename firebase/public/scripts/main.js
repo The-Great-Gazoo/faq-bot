@@ -181,6 +181,7 @@ function loadMessages() {
     return;
   }
   isLoaded = true;
+  hide_background_image();
 
   var queryGenesysAPI = firebase
     .firestore()
@@ -838,6 +839,10 @@ function toggleButton() {
   } else {
     submitButtonElement.setAttribute("disabled", "true");
   }
+}
+
+function hide_background_image() {
+  messageListElement.className = "background.hide";
 }
 
 // Checks that the Firebase SDK has been correctly setup and configured.

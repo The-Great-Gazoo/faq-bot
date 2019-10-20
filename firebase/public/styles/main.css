@@ -91,6 +91,17 @@ main {
     padding: 0 16%;
     padding-bottom: 20px;
 }
+
+.background {
+    background-image: url("/images/background.png");
+    background-repeat:no-repeat;
+    background-position: center center;
+    background-size: 50% 50%;
+}
+.bacgkround.hide {
+  background-image: none;
+}
+
 #agent-typing {
     padding: 0 16%;
 }
