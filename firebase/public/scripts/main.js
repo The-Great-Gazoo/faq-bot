@@ -138,10 +138,12 @@ function loadMessages() {
     if (doc.exists) {
       setUserAsGazooAgent();
       var agentData = doc.data();
-      console.log(agentData);
-      var timestamp = agentData.timestamp.toDate();
-      console.log(timestamp);
-      if (timestamp < (Math.floor(Date.now() / 1000) - 15*60)) {
+
+      var timestamp = Date.now();
+      var agentTimestamp = agentData.timestamp.toDate().getTime();
+
+      // only update agent data in firestore every 15mins
+      if (agentTimestamp < (timestamp - 15*60)) {
         return;
       }
 
