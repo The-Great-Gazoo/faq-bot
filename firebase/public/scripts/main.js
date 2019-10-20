@@ -28,7 +28,23 @@ function signIn() {
 }
 
 // Signs-out of Friendly Chat.
-function signOut() {
+async function signOut() {
+  const doc = await firebase
+    .firestore()
+    .collection("agents")
+    .doc(getUserEmail())
+    .get();
+  if (doc.exists) {
+    await firebase
+      .firestore()
+      .collection("agents")
+      .doc(doc.id)
+      .update({
+        uid: getUserID(),
+        status: "offline",
+        timestamp: firebase.firestore.FieldValue.serverTimestamp()
+      });
+  }
   // Sign out of Firebase.
   firebase.auth().signOut();
 }
