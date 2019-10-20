@@ -4,6 +4,9 @@ var isLoaded = false;
 var isHelpingUserID = false;
 var isGettingHelpedByID = false;
 var unsubscribeGettingHelped = false;
+var lastReferenceContext = false;
+
+const bracketRegexp = new RegExp(/\[([^)]+)\]/);
 
 const initMessage = `Hi $user! Welcome to Gazoo Spaceship support centre. I am your host, Gazoo, and I will be answering all your Gazoo Spaceship maintenance related questions.
 
@@ -538,6 +541,7 @@ async function onMessageFormSubmit(e) {
   e.preventDefault();
 
   let message = messageInputElement.value;
+
   clearMessageField();
 
   // Check that the user entered a message and is signed in.
@@ -548,21 +552,38 @@ async function onMessageFormSubmit(e) {
       agentIsTyping.style.display = "block";
     }
 
-    await saveMessage({ answer: message });
+    const messageParameters = {
+      answer: message,
+      agentRequest: isHelpingUserID ? true : false
+    };
+    if (isHelpingUserID || isGettingHelpedByID) {
+      messageParameters.uid = isHelpingUserID || isGettingHelpedByID;
+    }
+    await saveMessage(messageParameters);
+
     console.log("isGettingHelpedByID", isGettingHelpedByID);
     console.log("isHelpingUserID", isHelpingUserID);
+
     if (isGettingHelpedByID || isHelpingUserID) {
-      saveMessage({
-        answer: message,
-        uid: isHelpingUserID || isGettingHelpedByID,
-        agentRequest: isHelpingUserID ? true : false
-      });
       return;
     }
+
+    if (lastReferenceContext) {
+      message = message.replace("it", lastReferenceContext);
+    }
+    lastReferenceContext = false;
+
     const results = await getBotResponse({ message });
 
     agentIsTyping.style.display = "none";
     var { answer, question, customization, confidence } = getFAQAnswer(results);
+
+    const matches = answer.match(bracketRegexp);
+    if (matches && matches[1]) {
+      lastReferenceContext = matches[1];
+      answer = answer.replace(/[\[\]']+/g, ""); // Remove all brackets
+    }
+
     console.log(results, question, answer, customization, confidence);
 
     saveMessage({
