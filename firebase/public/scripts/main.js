@@ -16,6 +16,9 @@
 "use strict";
 
 var isLoaded = false;
+var isHelpingUserID = false;
+var isGettingHelpedByID = false;
+var unsubscribeGettingHelped = false;
 
 const initMessage = `Hi $user! Welcome to Gazoo Spaceship support centre. I am your host, Gazoo, and I will be answering all your Gazoo Spaceship maintenance related questions.
 Some topics you can ask me are: what to do when brakes sqeak, when to do oil change, which type of wiper blades to use.
@@ -162,7 +165,8 @@ function saveMessage({
     response.confidence = confidence;
   }
   if (agentRequest) {
-    response.agentRequest = agentRequest;
+    response.agentRequest = true;
+    response.fromUid = getUserID();
   }
   console.log(response);
   return firebase
@@ -218,7 +222,8 @@ function loadMessages() {
           message.profilePicUrl,
           message.imageUrl,
           message.customization,
-          message.confidence
+          message.confidence,
+          message.fromUid
         );
       }
     });
@@ -390,6 +395,69 @@ async function getBotResponse({ message, KB = "spaceshipKB" }) {
   }
 }
 
+async function onAgentJoin(value, fromUid) {
+  let message;
+  if (value === "yes") {
+    message = "Okay, connecting...";
+  } else {
+    message = "Okay but no space beer for you!";
+  }
+
+  saveMessage({
+    answer: message,
+    // Send as Gazoo
+    userName: genesysAPI.botname,
+    profile: gazooProfile
+  });
+
+  if (value === "yes") {
+    isHelpingUserID = fromUid;
+
+    firebase
+      .firestore()
+      .collection("users")
+      .doc(fromUid)
+      .collection("agentAssistance")
+      .add({
+        agentId: getUserID(),
+        timestamp: firebase.firestore.FieldValue.serverTimestamp()
+      });
+
+    saveMessage({
+      answer: "Hi $user, how can I help you?",
+      uid: fromUid
+    });
+
+    var queryMessages = firebase
+      .firestore()
+      .collection("users")
+      .doc(fromUid)
+      .collection("messages")
+      .orderBy("timestamp", "desc")
+      .limit(12);
+
+    queryMessages.onSnapshot(function(snapshot) {
+      snapshot.docChanges().forEach(function(change) {
+        if (change.type === "removed") {
+          deleteMessage(change.doc.id);
+        } else {
+          var message = change.doc.data();
+          displayMessage(
+            change.doc.id,
+            message.timestamp,
+            message.name,
+            message.text,
+            message.profilePicUrl,
+            message.imageUrl,
+            message.customization,
+            message.confidence,
+            message.fromUid
+          );
+        }
+      });
+    });
+  }
+}
 async function onAgentResponse(value) {
   let message;
   if (value === "yes") {
@@ -421,6 +489,21 @@ async function onAgentResponse(value) {
         // Send as Gazoo
         userName: genesysAPI.botname,
         profile: gazooProfile
+      });
+
+      var queryAgentHelp = firebase
+        .firestore()
+        .collection("users")
+        .doc(getUserID())
+        .collection("agentAssistance")
+        .orderBy("timestamp", "desc");
+
+      unsubscribeGettingHelped = queryAgentHelp.onSnapshot(function(snapshot) {
+        snapshot.docChanges().forEach(function(change) {
+          if (change.type === "added") {
+            isGettingHelpedByID = change.doc.agentId;
+          }
+        });
       });
 
       snapshot.docChanges().forEach(function(change) {
@@ -455,6 +538,14 @@ async function onMessageFormSubmit(e) {
   if (message && checkSignedInWithMessage()) {
     agentIsTyping.style.display = "block";
     await saveMessage({ answer: message });
+    if (isGettingHelpedByID || isHelpingUserID) {
+      saveMessage({
+        answer: message,
+        uid: isHelpingUserID || isGettingHelpedByID,
+        agentRequest: isHelpingUserID ? true : false
+      });
+      return;
+    }
     const results = await getBotResponse({ message });
 
     agentIsTyping.style.display = "none";
@@ -616,7 +707,8 @@ function displayMessage(
   picUrl,
   imageUrl,
   customization,
-  confidence
+  confidence,
+  fromUid
 ) {
   var div =
     document.getElementById(id) || createAndInsertMessage(id, timestamp);
@@ -679,7 +771,7 @@ function displayMessage(
           if (customization.type === "buttons-request-agent") {
             onAgentResponse(value);
           } else if (customization.type === "buttons-join-agent") {
-            // TODO: implement
+            onAgentJoin(value, fromUid);
           }
         };
         messageElement.appendChild(button);
