@@ -18,6 +18,12 @@ service cloud.firestore {
                       && request.resource.data.imageUrl.matches('https?://.*'));
       allow delete: if false;
     }
+    match /agents/{userEmail} {
+      allow read;
+      allow create, update: if request.auth != null
+                    && request.resource.data.uid == request.auth.uid;
+      allow delete: if false;
+    }
     // FCM Tokens:
     //   - Anyone can write their token.
     //   - Reading list of tokens is not allowed.

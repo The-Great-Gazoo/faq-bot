@@ -58,6 +58,19 @@ function getUserID() {
   return firebase.auth().currentUser.uid;
 }
 
+// Returns the signed-in users' ID
+function getUserEmail() {
+  return firebase.auth().currentUser.email;
+}
+
+function setUserAsGazooAgent() {
+  firebase.auth().currentUser.isGazooAgent = true;
+}
+
+function isUserGazooAgent() {
+  return !!firebase.auth().currentUser.isGazooAgent;
+}
+
 // Returns true if a user is signed-in.
 function isUserSignedIn() {
   return !!firebase.auth().currentUser;
@@ -95,7 +108,7 @@ function saveMessage({
 // Loads chat messages history and listens for upcoming ones.
 function loadMessages() {
   // Create the query to load the last 12 messages and listen for new ones.
-  var query = firebase
+  var queryMessages = firebase
     .firestore()
     .collection("users")
     .doc(getUserID())
@@ -103,19 +116,40 @@ function loadMessages() {
     .orderBy("timestamp", "desc")
     .limit(12);
 
-  var queryToken = firebase
+  var queryGenesysAPI = firebase
     .firestore()
     .collection("config")
     .doc("genesys-api");
 
+  var queryAgent = firebase
+    .firestore()
+    .collection("agents")
+    .doc(getUserEmail())
+
   // Start listening to the query.
-  queryToken.onSnapshot(doc => {
+  queryGenesysAPI.onSnapshot(doc => {
     if (doc.exists) {
       genesysAPI = doc.data();
       console.log(genesysAPI);
     }
   });
-  query.onSnapshot(function(snapshot) {
+
+  queryAgent.onSnapshot(doc => {
+    if (doc.exists) {
+      setUserAsGazooAgent();
+      firebase
+        .firestore()
+        .collection("agents")
+        .doc(doc.id)
+        .update({
+          uid: getUserID(),
+          status: "online",
+          timestamp: firebase.firestore.FieldValue.serverTimestamp()
+        });
+    }
+  });
+
+  queryMessages.onSnapshot(function(snapshot) {
     snapshot.docChanges().forEach(function(change) {
       if (change.type === "removed") {
         deleteMessage(change.doc.id);
