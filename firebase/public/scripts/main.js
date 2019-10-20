@@ -134,9 +134,17 @@ function loadMessages() {
     }
   });
 
-  queryAgent.onSnapshot(doc => {
+  queryAgent.get().then(doc => {
     if (doc.exists) {
       setUserAsGazooAgent();
+      var agentData = doc.data();
+      console.log(agentData);
+      var timestamp = agentData.timestamp.toDate();
+      console.log(timestamp);
+      if (timestamp < (Math.floor(Date.now() / 1000) - 15*60)) {
+        return;
+      }
+
       firebase
         .firestore()
         .collection("agents")
