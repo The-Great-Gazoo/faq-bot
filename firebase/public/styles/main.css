@@ -16,10 +16,24 @@
 
  html, body {
   font-family: 'Roboto', 'Helvetica', sans-serif;
+  display: flex;
+    flex-direction: column;
+    flex: 1;
+    height: 100%;
 }
-main, #messages-card {
-  height: 100%;
+.container-layout {
+    display: flex;
+    flex-direction: column;
+    flex: 1;
+    height: 100%;
+}
+main {
   padding-bottom: 0;
+  height: 100%;
+  display: flex;
+    flex-direction: column;
+    flex: 1;
+    height: 100%;
 }
 
 .header {
@@ -31,6 +45,9 @@ main, #messages-card {
 }
 .title {
     font-size: 20px;
+    text-overflow: ellipsis;
+    overflow: hidden;
+    white-space: pre;
 }
 .header-logo {
     background-image: url(/images/spaceship.png);
@@ -40,13 +57,7 @@ main, #messages-card {
     background-size: contain;
     margin-right: 10px;
 }
-#messages-card-container {
-  height: calc(100% - 35px);
-  padding-bottom: 0;
-}
-#messages-card {
-  margin-top: 15px;
-}
+
 .mdl-layout__header-row span {
   margin-left: 15px;
   margin-top: 17px;
@@ -71,11 +82,20 @@ main, #messages-card {
   padding-bottom: 0;
 }
 #messages {
-  overflow-y: auto;
-  margin-bottom: 10px;
-  height: calc(100% - 80px);
-  display: flex;
-  flex-direction: column;
+    box-shadow: inset 0 -4px 2px -2px rgba(0, 0, 0, 0.1);
+    overflow-y: auto;
+    margin-bottom: 10px;
+    display: flex;
+    flex: 1;
+    flex-direction: column;
+    padding: 0 16%;
+    padding-bottom: 20px;
+}
+#agent-typing {
+    padding: 0 16%;
+}
+.footer-custom {
+    padding: 0 16%;
 }
 #message-filler {
   flex-grow: 1;
@@ -110,6 +130,7 @@ main, #messages-card {
   display: table-cell;
   width: calc(100% - 40px);
   padding: 5px 0 5px 10px;
+  font-size: 15px;
 }
 .message-container .name {
   display: inline-block;
@@ -123,7 +144,7 @@ main, #messages-card {
 #message-form {
   display: flex;
   flex-direction: row;
-  width: calc(100% - 48px);
+  width: 100%;
   float: left;
 }
 #image-form {
@@ -165,6 +186,7 @@ main, #messages-card {
 #user-container {
     display: flex;
     flex-direction: row-reverse;
+    align-items: center;
     flex: 1;
 }
 #user-container #user-pic {
@@ -172,10 +194,10 @@ main, #messages-card {
   display: inline-block;
   background-image: url('/images/profile_placeholder.png');
   background-repeat: no-repeat;
-  width: 40px;
-  height: 40px;
-  background-size: 40px;
-  border-radius: 20px;
+  width: 30px;
+  height: 30px;
+  background-size: 30px;
+  border-radius: 15px;
 }
 #user-container #user-name {
     font-size: 16px;
@@ -202,22 +224,20 @@ main, #messages-card {
   display: none;
 }
 @media screen and (max-width: 610px) {
-  header {
-    height: 113px;
-    padding-bottom: 80px !important;
+    .header-logo,
+  #user-name {
+      display: none !important;
   }
   #user-container {
-    top: 72px;
-    background-color: rgb(3,155,229);
-    height: 38px;
-    padding-top: 3px;
-    padding-right: 2px;
   }
   #user-container #user-pic {
-    top: 2px;
-    width: 33px;
-    height: 33px;
-    background-size: 33px;
+    min-width: 30px;
+    margin-right: 7px;
+  }
+  .footer-custom,
+  #agent-typing,
+  #messages {
+      padding: 0 10px;
   }
 }
 .mdl-textfield__label:after {
@@ -225,8 +245,4 @@ main, #messages-card {
 }
 .mdl-textfield--floating-label.is-focused .mdl-textfield__label {
   color: #0288D1;
-}
-.mdl-button .material-icons {
-  top: -1px;
-  margin-right: 5px;
 }

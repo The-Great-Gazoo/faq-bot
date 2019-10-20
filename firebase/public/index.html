@@ -54,7 +54,7 @@
 
 </head>
 <body>
-<div class="demo-layout mdl-layout mdl-js-layout mdl-layout--fixed-header">
+<div class="container-layout">
 
   <!-- Header section containing logo -->
   <header class="header">
@@ -73,37 +73,35 @@
   </header>
 
   <main>
-    <div id="messages-card-container" >
-
       <!-- Messages container -->
-      <div id="messages-card">
-        <div class="mdl-card__supporting-text mdl-color-text--grey-600">
           <div id="messages">
           </div>
-          <form id="message-form" action="#">
-            <div class="mdl-textfield mdl-js-textfield mdl-textfield--floating-label">
-              <input class="mdl-textfield__input" type="text" id="message" autocomplete="off">
-              <label class="mdl-textfield__label" for="message">Message...</label>
-            </div>
-            <button id="submit" disabled type="submit" class="wp-button">
-              Send
-            </button>
-          </form>
-          <form id="image-form" action="#">
-            <input id="mediaCapture" type="file" accept="image/*" capture="camera">
-            <button id="submitImage" title="Add an image" class="mdl-button mdl-js-button mdl-button--raised mdl-js-ripple-effect mdl-color--amber-400 mdl-color-text--white">
-              <i class="material-icons">image</i>
-            </button>
-          </form>
+          <div style="display:none;" id="agent-typing">Gazoo agent is typing...</div>
+          <div class="footer-custom" style="display: flex;">
+                <form id="message-form" action="#">
+                        <div class="mdl-textfield mdl-js-textfield mdl-textfield--floating-label">
+                            <input class="mdl-textfield__input" type="text" id="message" autocomplete="off">
+                            <label class="mdl-textfield__label" for="message">Message...</label>
+                        </div>
+                    
+                        <button id="submit" disabled type="submit" class="wp-button">
+                          Send
+                        </button>
+                      </form>
+                      <form id="image-form" action="#">
+                        <input id="mediaCapture" type="file" accept="image/*" capture="camera">
+                        <button id="submitImage" title="Add an image" class="mdl-button mdl-js-button mdl-button--raised mdl-js-ripple-effect mdl-color--amber-400 mdl-color-text--white">
+                          <i class="material-icons">image</i>
+                        </button>
+                      </form>
         </div>
-      </div>
+          
 
       <div id="must-signin-snackbar" class="mdl-js-snackbar mdl-snackbar">
         <div class="mdl-snackbar__text"></div>
         <button class="mdl-snackbar__action" type="button"></button>
       </div>
 
-    </div>
   </main>
 </div>
 

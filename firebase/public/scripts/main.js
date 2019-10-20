@@ -16,6 +16,8 @@
 "use strict";
 
 // Signs-in Friendly Chat.
+let genesysAPI;
+
 function signIn() {
   // Sign into Firebase using popup auth & Google as the identity provider.
   var provider = new firebase.auth.GoogleAuthProvider();
@@ -77,7 +79,18 @@ function loadMessages() {
     .orderBy("timestamp", "desc")
     .limit(12);
 
+  var queryToken = firebase
+    .firestore()
+    .collection("config")
+    .doc("genesys-api");
+
   // Start listening to the query.
+  queryToken.onSnapshot(doc => {
+    if (doc.exists) {
+      genesysAPI = doc.data();
+      console.log(genesysAPI);
+    }
+  });
   query.onSnapshot(function(snapshot) {
     snapshot.docChanges().forEach(function(change) {
       if (change.type === "removed") {
@@ -202,9 +215,62 @@ function onMediaFileSelected(event) {
 // Triggered when the send new message form is submitted.
 function onMessageFormSubmit(e) {
   e.preventDefault();
+  const message = messageInputElement.value;
+  if (messageInputElement.value.length <= 4) {
+    alert("Message is too short. Please type more than 5 characters.");
+    return;
+  }
   // Check that the user entered a message and is signed in.
-  if (messageInputElement.value && checkSignedInWithMessage()) {
-    saveMessage(messageInputElement.value).then(function() {
+  if (message && checkSignedInWithMessage()) {
+    agentIsTyping.style.display = "block";
+    saveMessage(message).then(function() {
+      if (genesysAPI && genesysAPI.token) {
+        fetch(
+          "https://cors-anywhere.herokuapp.com/https://api.genesysappliedresearch.com/v2/knowledge/knowledgebases/fa914326-e031-4564-a2a5-2fa08e9e4660/search",
+          {
+            method: "POST",
+            headers: {
+              "cache-control": "no-cache",
+              token: genesysAPI.token,
+              organizationid: "507c6b94-d35a-48ce-9937-c2e4aa69c279",
+              "Content-Type": "application/json"
+            },
+            body: JSON.stringify({
+              query: message,
+              pageSize: 1,
+              pageNumber: 1,
+              sortOrder: "string",
+              sortBy: "string",
+              languageCode: "en-US",
+              documentType: "Faq"
+            }),
+            json: true
+          }
+        )
+          .then(function(response) {
+            if (response.status !== 200) {
+              console.log(
+                "Looks like there was a problem. Status Code: " +
+                  response.status
+              );
+              return;
+            }
+
+            // Examine the text in the response
+            response.json().then(function(data) {
+              if (data.results) {
+                agentIsTyping.style.display = "none";
+                console.log(data.results);
+              }
+            });
+          })
+          .catch(function(err) {
+            console.log("Fetch Error :-S", err);
+          });
+      } else {
+        alert("Genesys down!");
+      }
+
       // Clear message text field and re-enable the SEND button.
       resetMaterialTextfield(messageInputElement);
       toggleButton();
@@ -338,7 +404,7 @@ function createAndInsertMessage(id, timestamp) {
 }
 
 // Displays a Message in the UI.
-function displayMessage(id, timestamp, name, text, picUrl, imageUrl) {
+function displayMessage(id, timestamp, name, text, picUrl, imageUrl, fromId) {
   var div =
     document.getElementById(id) || createAndInsertMessage(id, timestamp);
 
@@ -415,6 +481,7 @@ var userNameElement = document.getElementById("user-name");
 var signInButtonElement = document.getElementById("sign-in");
 var signOutButtonElement = document.getElementById("sign-out");
 var signInSnackbarElement = document.getElementById("must-signin-snackbar");
+var agentIsTyping = document.getElementById("agent-typing");
 
 // Saves message on form submit.
 messageFormElement.addEventListener("submit", onMessageFormSubmit);
@@ -437,8 +504,6 @@ initFirebaseAuth();
 
 // Remove the warning about timstamps change.
 var firestore = firebase.firestore();
-var settings = { timestampsInSnapshots: true };
-firestore.settings(settings);
 
 // TODO: Enable Firebase Performance Monitoring.
 firebase.performance();
