@@ -1,34 +1,40 @@
-
+const request = require("request");
 const functions = require('firebase-functions');
+var admin = require("firebase-admin");
 
-// // Create and Deploy Your First Cloud Functions
-// // https://firebase.google.com/docs/functions/write-firebase-functions
-//
-// exports.helloWorld = functions.https.onRequest((request, response) => {
-//  response.send("Hello from Firebase!");
-// });
+var serviceAccount = require("./the-great-gazoo-shop-firebase-adminsdk-vojgn-24d38f15e9.json");
+
+admin.initializeApp({
+  credential: admin.credential.cert(serviceAccount),
+  databaseURL: "https://the-great-gazoo-shop.firebaseio.com"
+});
+
+let db = admin.firestore();
 
 exports.refreshGenesysAPIToken = functions.pubsub.schedule('every 59 minutes').onRun((context) => {
-    var request = require("request");
 
-    var options = { 
-        method: 'POST',
+    var options = {
         url: 'https://api.genesysappliedresearch.com/v2/knowledge/generatetoken',
-        headers: {   
+        headers: {
             'cache-control': 'no-cache',
             secretkey: '8567a7ee-8623-4b92-a112-17f0a755572a',
-            organizationid: '507c6b94-d35a-48ce-9937-c2e4aa69c279' 
-        } 
+            organizationid: '507c6b94-d35a-48ce-9937-c2e4aa69c279'
+        },
+        json: true
     };
 
-    request(options, function (error, response, body) {
+    request.post(options, function (error, response, body) {
         if (error) throw new Error(error);
 
-        const ref = firebase.firestore().collection('config').doc('genesys-api');
-        ref.get().then((doc) => {
-            if(doc.exists()){
-                ref.update({token: body.token});
-            }
-        });
+        try {
+            return db.collection('config')
+                .doc('genesys-api')
+                .update({
+                    token: body.token,
+                    timestamp: admin.firestore.FieldValue.serverTimestamp()
+                });
+        } catch (err) {
+            console.log(err);
+        }
     });
 });
