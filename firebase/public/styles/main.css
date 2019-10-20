@@ -16,10 +16,24 @@
 
  html, body {
   font-family: 'Roboto', 'Helvetica', sans-serif;
+  display: flex;
+    flex-direction: column;
+    flex: 1;
+    height: 100%;
 }
-main, #messages-card {
-  height: 100%;
+.container-layout {
+    display: flex;
+    flex-direction: column;
+    flex: 1;
+    height: 100%;
+}
+main {
   padding-bottom: 0;
+  height: 100%;
+  display: flex;
+    flex-direction: column;
+    flex: 1;
+    height: 100%;
 }
 
 .header {
@@ -44,14 +58,6 @@ main, #messages-card {
     margin-right: 10px;
 }
 
-#messages-card-container {
-  height: calc(100% - 25px);
-  padding-bottom: 0;
-}
-#messages-card {
-  margin-top: 15px;
-    margin: 0 16%;
-}
 .mdl-layout__header-row span {
   margin-left: 15px;
   margin-top: 17px;
@@ -76,11 +82,20 @@ main, #messages-card {
   padding-bottom: 0;
 }
 #messages {
+    box-shadow: inset 0 -4px 2px -2px rgba(0, 0, 0, 0.1);
     overflow-y: auto;
     margin-bottom: 10px;
-    height: calc(100% - 86px);
     display: flex;
+    flex: 1;
     flex-direction: column;
+    padding: 0 16%;
+    padding-bottom: 20px;
+}
+#agent-typing {
+    padding: 0 16%;
+}
+.footer-custom {
+    padding: 0 16%;
 }
 #message-filler {
   flex-grow: 1;
@@ -129,7 +144,7 @@ main, #messages-card {
 #message-form {
   display: flex;
   flex-direction: row;
-  width: calc(100% - 48px);
+  width: 100%;
   float: left;
 }
 #image-form {
@@ -219,8 +234,10 @@ main, #messages-card {
     min-width: 30px;
     margin-right: 7px;
   }
+  .footer-custom,
+  #agent-typing,
   #messages {
-      padding: 0;
+      padding: 0 10px;
   }
 }
 .mdl-textfield__label:after {
