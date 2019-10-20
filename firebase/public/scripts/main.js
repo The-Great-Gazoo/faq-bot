@@ -472,7 +472,7 @@ async function onAgentJoin(value, fromUid, recipientName) {
 async function onAgentResponse(value, recipientName) {
   let message;
   if (value === "yes") {
-    message = "Okay. An agent is going to assist you shortly.";
+    message = "Okay, we are searching for the next available agent to assist you.";
   } else {
     message =
       "No problem. Do you have any other concerns or questions I could help you with?";
@@ -494,10 +494,15 @@ async function onAgentResponse(value, recipientName) {
     var unsubscribe = queryAgents.onSnapshot(function(snapshot) {
       unsubscribe();
 
+      var numAgents = snapshot.docChanges().length;
+      var answer = `Unfortunately, there are no agents immediately available at this time.`;
+      if (numAgents == 1) {
+        answer = "There is one agent available at this time. Please sit tight as we contact them to assist you.";
+      } else if (numAgents > 1) {
+        answer = `There are ${numAgents} available at this time. Please sit tight as we contact them to assist you.`;
+      }
       saveMessage({
-        answer: `There is ${
-          snapshot.docChanges().length
-        } agent(s) available. Please hold.`,
+        answer: answer,
         // Send as Gazoo
         userName: genesysAPI.botname,
         profile: gazooProfile
