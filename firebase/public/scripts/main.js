@@ -16,9 +16,11 @@
 "use strict";
 
 var isLoaded = false;
+var hasAgentRequest = false;
 
 // Signs-in Friendly Chat.
 let genesysAPI;
+const gazooProfile = `/images/gazoo-avatar.png`;
 
 function signIn() {
   // Sign into Firebase using popup auth & Google as the identity provider.
@@ -40,6 +42,7 @@ function initFirebaseAuth() {
 
 // Returns the signed-in user's profile Pic URL.
 function getProfilePicUrl() {
+  console.log(firebase.auth().currentUser.photoURL);
   return (
     firebase.auth().currentUser.photoURL || "/images/profile_placeholder.png"
   );
@@ -61,19 +64,29 @@ function isUserSignedIn() {
 }
 
 // Saves a new message on the Firebase DB.
-function saveMessage(messageText) {
+function saveMessage({
+  question,
+  answer,
+  userName = getUserName(),
+  profile = getProfilePicUrl()
+}) {
   // Add a new message entry to the database.
+  const response = {
+    uid: getUserID(),
+    name: userName,
+    text: answer,
+    profilePicUrl: profile,
+    timestamp: firebase.firestore.FieldValue.serverTimestamp()
+  };
+  if (question) {
+    response.question = question;
+  }
   return firebase
     .firestore()
     .collection("users")
     .doc(getUserID())
     .collection("messages")
-    .add({
-      name: getUserName(),
-      text: messageText,
-      profilePicUrl: getProfilePicUrl(),
-      timestamp: firebase.firestore.FieldValue.serverTimestamp()
-    })
+    .add(response)
     .catch(function(error) {
       console.error("Error writing new message to database", error);
     });
@@ -225,70 +238,117 @@ function onMediaFileSelected(event) {
   }
 }
 
+function getFAQAnswer(results) {
+  try {
+    return results[0].faq;
+  } catch (err) {
+    hasAgentRequest = true;
+    return {
+      answer:
+        "Sorry, I don't know the answer to that yet. Would you like to speak with a Gazoo Certified Agent?"
+    };
+  }
+}
+
+async function getBotResponse({ message, KB = "spaceshipKB" }) {
+  if (!genesysAPI || !genesysAPI.token || !genesysAPI[KB]) {
+    alert("Genesys down!");
+  }
+  try {
+    const response = await fetch(
+      `https://cors-anywhere.herokuapp.com/https://api.genesysappliedresearch.com/v2/knowledge/knowledgebases/${genesysAPI[KB]}/search`,
+      {
+        method: "POST",
+        headers: {
+          "cache-control": "no-cache",
+          token: genesysAPI.token,
+          organizationid: "507c6b94-d35a-48ce-9937-c2e4aa69c279",
+          "Content-Type": "application/json"
+        },
+        body: JSON.stringify({
+          query: message,
+          pageSize: 1,
+          pageNumber: 1,
+          sortOrder: "string",
+          sortBy: "string",
+          languageCode: "en-US",
+          documentType: "Faq"
+        }),
+        json: true
+      }
+    );
+    if (response.status !== 200) {
+      console.log(
+        "Looks like there was a problem. Status Code: " + response.status
+      );
+      return;
+    }
+
+    // Examine the text in the response
+    const data = await response.json();
+    return data.results;
+  } catch (err) {
+    console.log("something went wrong", err);
+  }
+}
+
+async function onAgentResponse(message) {
+  hasAgentRequest = false;
+  clearMessageField();
+
+  const results = await getBotResponse({ message, KB: "responseKB" });
+
+  var { answer, question } = getFAQAnswer(results);
+  console.log(results, question, answer);
+
+  if (answer === "yes") {
+    message = "Okay we will connect you with an agent shortly.";
+  } else {
+    message = "No problem. Do you have any other questions?";
+  }
+  saveMessage({
+    answer: message,
+    question,
+    // Send as Gazoo
+    userName: genesysAPI.botname,
+    profile: gazooProfile
+  });
+}
+
 // Triggered when the send new message form is submitted.
-function onMessageFormSubmit(e) {
+async function onMessageFormSubmit(e) {
   e.preventDefault();
-  const message = messageInputElement.value;
-  if (messageInputElement.value.length <= 4) {
-    alert("Message is too short. Please type more than 5 characters.");
+
+  let message = messageInputElement.value;
+  clearMessageField();
+
+  if (hasAgentRequest) {
+    onAgentResponse(message);
     return;
   }
   // Check that the user entered a message and is signed in.
   if (message && checkSignedInWithMessage()) {
     agentIsTyping.style.display = "block";
-    saveMessage(message).then(function() {
-      if (genesysAPI && genesysAPI.token) {
-        fetch(
-          "https://cors-anywhere.herokuapp.com/https://api.genesysappliedresearch.com/v2/knowledge/knowledgebases/fa914326-e031-4564-a2a5-2fa08e9e4660/search",
-          {
-            method: "POST",
-            headers: {
-              "cache-control": "no-cache",
-              token: genesysAPI.token,
-              organizationid: "507c6b94-d35a-48ce-9937-c2e4aa69c279",
-              "Content-Type": "application/json"
-            },
-            body: JSON.stringify({
-              query: message,
-              pageSize: 1,
-              pageNumber: 1,
-              sortOrder: "string",
-              sortBy: "string",
-              languageCode: "en-US",
-              documentType: "Faq"
-            }),
-            json: true
-          }
-        )
-          .then(function(response) {
-            if (response.status !== 200) {
-              console.log(
-                "Looks like there was a problem. Status Code: " +
-                  response.status
-              );
-              return;
-            }
+    await saveMessage({ answer: message });
+    const results = await getBotResponse({ message });
 
-            // Examine the text in the response
-            response.json().then(function(data) {
-              if (data.results) {
-                agentIsTyping.style.display = "none";
-                console.log(data.results);
-              }
-            });
-          })
-          .catch(function(err) {
-            console.log("Fetch Error :-S", err);
-          });
-      } else {
-        alert("Genesys down!");
-      }
-
-      // Clear message text field and re-enable the SEND button.
-      resetMaterialTextfield(messageInputElement);
-      toggleButton();
+    agentIsTyping.style.display = "none";
+    var { answer, question } = getFAQAnswer(results);
+    console.log(results, question, answer);
+    saveMessage({
+      answer,
+      question,
+      // Send as Gazoo
+      userName: genesysAPI.botname,
+      profile: gazooProfile
     });
   }
+}
+
+function clearMessageField() {
+  // Clear message text field and re-enable the SEND button.
+  resetMaterialTextfield(messageInputElement);
+  toggleButton();
 }
 
 // Triggers when the auth state change for instance when the user signs-in or signs-out.
@@ -490,9 +550,9 @@ var messageListElement = document.getElementById("messages");
 var messageFormElement = document.getElementById("message-form");
 var messageInputElement = document.getElementById("message");
 var submitButtonElement = document.getElementById("submit");
-var imageButtonElement = document.getElementById("submitImage");
-var imageFormElement = document.getElementById("image-form");
-var mediaCaptureElement = document.getElementById("mediaCapture");
+// var imageButtonElement = document.getElementById("submitImage");
+// var imageFormElement = document.getElementById("image-form");
+// var mediaCaptureElement = document.getElementById("mediaCapture");
 var userPicElement = document.getElementById("user-pic");
 var userNameElement = document.getElementById("user-name");
 var signInButtonElement = document.getElementById("sign-in");
@@ -510,11 +570,11 @@ messageInputElement.addEventListener("keyup", toggleButton);
 messageInputElement.addEventListener("change", toggleButton);
 
 // Events for image upload.
-imageButtonElement.addEventListener("click", function(e) {
-  e.preventDefault();
-  mediaCaptureElement.click();
-});
-mediaCaptureElement.addEventListener("change", onMediaFileSelected);
+// imageButtonElement.addEventListener("click", function(e) {
+//   e.preventDefault();
+//   mediaCaptureElement.click();
+// });
+// mediaCaptureElement.addEventListener("change", onMediaFileSelected);
 
 // initialize Firebase
 initFirebaseAuth();
