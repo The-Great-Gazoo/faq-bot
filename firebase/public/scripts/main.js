@@ -488,7 +488,6 @@ async function onAgentResponse(value, recipientName) {
       .where("status", "==", "online")
       .orderBy("timestamp", "desc")
       .limit(12);
-
     queryAgents.onSnapshot(function(snapshot) {
       saveMessage({
         answer: `There is ${
@@ -556,8 +555,8 @@ async function onMessageFormSubmit(e) {
       answer: message,
       agentRequest: isHelpingUserID ? true : false
     };
-    if (isHelpingUserID || isGettingHelpedByID) {
-      messageParameters.uid = isHelpingUserID || isGettingHelpedByID;
+    if (isHelpingUserID) {
+      messageParameters.uid = isHelpingUserID;
     }
     await saveMessage(messageParameters);
 
