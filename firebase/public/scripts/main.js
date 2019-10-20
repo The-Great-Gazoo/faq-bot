@@ -17,6 +17,10 @@
 
 var isLoaded = false;
 
+const initMessage = `Hi $user! Welcome to Gazoo Spaceship support centre. I am your host, Gazoo, and I will be answering all your Gazoo Spaceship maintenance related questions.
+Some topics you can ask me are: what to do when brakes sqeak, when to do oil change, which type of wiper blades to use.
+So, how can I help you?`;
+
 // Signs-in Friendly Chat.
 let genesysAPI;
 const gazooProfile = `/images/gazoo-avatar.png`;
@@ -58,7 +62,6 @@ async function signIn() {
       setUserAsGazooAgent();
     }
   });
-
 }
 
 // Signs-out of Friendly Chat.
@@ -137,11 +140,13 @@ function saveMessage({
   userName = getUserName(),
   profile = getProfilePicUrl(),
   customization,
-  confidence
+  confidence,
+  uid = getUserID(),
+  agentRequest
 }) {
   // Add a new message entry to the database.
   const response = {
-    uid: getUserID(),
+    uid,
     name: userName,
     text: answer,
     profilePicUrl: profile,
@@ -156,10 +161,14 @@ function saveMessage({
   if (confidence) {
     response.confidence = confidence;
   }
+  if (agentRequest) {
+    response.agentRequest = agentRequest;
+  }
+  console.log(response);
   return firebase
     .firestore()
     .collection("users")
-    .doc(getUserID())
+    .doc(uid)
     .collection("messages")
     .add(response)
     .catch(function(error) {
@@ -186,7 +195,6 @@ function loadMessages() {
     .firestore()
     .collection("config")
     .doc("genesys-api");
-
 
   // Start listening to the query.
   queryGenesysAPI.onSnapshot(doc => {
@@ -328,7 +336,7 @@ function getFAQAnswer(results) {
     return data;
   } catch (err) {
     const customization = JSON.stringify({
-      type: "buttons",
+      type: "buttons-request-agent",
       values: ["yes", "no"]
     });
 
@@ -396,6 +404,44 @@ async function onAgentResponse(value) {
     userName: genesysAPI.botname,
     profile: gazooProfile
   });
+
+  if (value === "yes") {
+    var queryAgents = firebase
+      .firestore()
+      .collection("agents")
+      .where("status", "==", "online")
+      .orderBy("timestamp", "desc")
+      .limit(12);
+
+    queryAgents.onSnapshot(function(snapshot) {
+      saveMessage({
+        answer: `There is ${
+          snapshot.docChanges().length
+        } agent(s) available. Please hold.`,
+        // Send as Gazoo
+        userName: genesysAPI.botname,
+        profile: gazooProfile
+      });
+
+      snapshot.docChanges().forEach(function(change) {
+        var agent = change.doc.data();
+        if (agent.uid != getUserID()) {
+          const customization = JSON.stringify({
+            type: "buttons-join-agent",
+            values: ["yes", "no"]
+          });
+          saveMessage({
+            answer: `${getUserName()} needs help. Go help!`,
+            uid: agent.uid,
+            userName: genesysAPI.botname,
+            profile: gazooProfile,
+            customization,
+            agentRequest: true
+          });
+        }
+      });
+    });
+  }
 }
 
 // Triggered when the send new message form is submitted.
@@ -621,13 +667,20 @@ function displayMessage(
 
   if (customization) {
     customization = JSON.parse(customization);
-    if (customization.type === "buttons") {
+    if (
+      customization.type === "buttons-request-agent" ||
+      customization.type === "buttons-join-agent"
+    ) {
       customization.values.forEach(value => {
         var button = document.createElement("button");
         button.textContent = value;
         button.setAttribute("class", "yes-no");
         button.onclick = function() {
-          onAgentResponse(value);
+          if (customization.type === "buttons-request-agent") {
+            onAgentResponse(value);
+          } else if (customization.type === "buttons-join-agent") {
+            // TODO: implement
+          }
         };
         messageElement.appendChild(button);
       });
