@@ -97,7 +97,8 @@ function saveMessage({
   answer,
   userName = getUserName(),
   profile = getProfilePicUrl(),
-  customization
+  customization,
+  confidence
 }) {
   // Add a new message entry to the database.
   const response = {
@@ -112,6 +113,9 @@ function saveMessage({
   }
   if (customization) {
     response.customization = customization;
+  }
+  if (confidence) {
+    response.confidence = confidence;
   }
   return firebase
     .firestore()
@@ -191,7 +195,8 @@ function loadMessages() {
           message.text,
           message.profilePicUrl,
           message.imageUrl,
-          message.customization
+          message.customization,
+          message.confidence
         );
       }
     });
@@ -304,7 +309,9 @@ function onMediaFileSelected(event) {
 
 function getFAQAnswer(results) {
   try {
-    return results[0].faq;
+    const data = results[0].faq;
+    data.confidence = results[0].confidence;
+    return data;
   } catch (err) {
     const customization = JSON.stringify({
       type: "buttons",
@@ -391,13 +398,14 @@ async function onMessageFormSubmit(e) {
     const results = await getBotResponse({ message });
 
     agentIsTyping.style.display = "none";
-    var { answer, question, customization } = getFAQAnswer(results);
-    console.log(results, question, answer, customization);
+    var { answer, question, customization, confidence } = getFAQAnswer(results);
+    console.log(results, question, answer, customization, confidence);
 
     saveMessage({
       answer,
       question,
       customization,
+      confidence,
       // Send as Gazoo
       userName: genesysAPI.botname,
       profile: gazooProfile
@@ -548,7 +556,8 @@ function displayMessage(
   text,
   picUrl,
   imageUrl,
-  customization
+  customization,
+  confidence
 ) {
   var div =
     document.getElementById(id) || createAndInsertMessage(id, timestamp);
@@ -578,6 +587,11 @@ function displayMessage(
         day: "numeric"
       })}</strong>`
     );
+    if (confidence <= 0.4) {
+      text =
+        "<strong>I am not sure I fully understand your question but here's an answer I found that might be helpful to you:</strong><br><br>" +
+        text;
+    }
     messageElement.innerHTML = text;
     // Replace all line breaks by <br>.
     messageElement.innerHTML = messageElement.innerHTML.replace(/\n/g, "<br>");
