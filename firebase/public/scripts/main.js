@@ -564,7 +564,21 @@ function displayMessage(
 
   if (text) {
     // If the message is text.
-    messageElement.textContent = text;
+    const username = getUserName();
+    text = text.replace(
+      "$user",
+      username ? `<strong>${username}</strong>` : "user"
+    );
+    text = text.replace(
+      "$date",
+      `<strong>${new Date().toLocaleDateString("en-US", {
+        weekday: "long",
+        year: "numeric",
+        month: "long",
+        day: "numeric"
+      })}</strong>`
+    );
+    messageElement.innerHTML = text;
     // Replace all line breaks by <br>.
     messageElement.innerHTML = messageElement.innerHTML.replace(/\n/g, "<br>");
   } else if (imageUrl) {
