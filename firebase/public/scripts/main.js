@@ -538,6 +538,8 @@ async function onMessageFormSubmit(e) {
   if (message && checkSignedInWithMessage()) {
     agentIsTyping.style.display = "block";
     await saveMessage({ answer: message });
+    console.log("isGettingHelpedByID", isGettingHelpedByID);
+    console.log("isHelpingUserID", isHelpingUserID);
     if (isGettingHelpedByID || isHelpingUserID) {
       saveMessage({
         answer: message,

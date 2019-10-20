@@ -13,9 +13,14 @@ service cloud.firestore {
       allow create, update: if request.auth != null
                    && (request.resource.data.agentRequest || request.resource.data.uid == request.auth.uid)
                     && (request.resource.data.text is string
-                      && request.resource.data.text.size() <= 500
+                      && request.resource.data.text.size() <= 1000
                       || request.resource.data.imageUrl is string
                       && request.resource.data.imageUrl.matches('https?://.*'));
+      allow delete: if false;
+    }
+    match /users/{userId}/agentAssistance/{doc=**} {
+      allow read;
+      allow create, update;
       allow delete: if false;
     }
     match /agents/{userEmail} {
