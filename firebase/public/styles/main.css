@@ -216,6 +216,13 @@ main {
 #image-form #submitImage .material-icons {
   top: -1px;
 }
+
+.yes-no {
+    display: none;
+}
+#messages > *:last-child .yes-no {
+    display: block;
+}
 .message img {
   max-width: 300px;
   max-height: 200px;

@@ -16,7 +16,6 @@
 "use strict";
 
 var isLoaded = false;
-var hasAgentRequest = false;
 
 // Signs-in Friendly Chat.
 let genesysAPI;
@@ -81,7 +80,8 @@ function saveMessage({
   question,
   answer,
   userName = getUserName(),
-  profile = getProfilePicUrl()
+  profile = getProfilePicUrl(),
+  customization
 }) {
   // Add a new message entry to the database.
   const response = {
@@ -93,6 +93,9 @@ function saveMessage({
   };
   if (question) {
     response.question = question;
+  }
+  if (customization) {
+    response.customization = customization;
   }
   return firebase
     .firestore()
@@ -124,7 +127,7 @@ function loadMessages() {
   var queryAgent = firebase
     .firestore()
     .collection("agents")
-    .doc(getUserEmail())
+    .doc(getUserEmail());
 
   // Start listening to the query.
   queryGenesysAPI.onSnapshot(doc => {
@@ -143,7 +146,7 @@ function loadMessages() {
       var agentTimestamp = agentData.timestamp.toDate().getTime();
 
       // only update agent data in firestore every 15mins
-      if (agentTimestamp < (timestamp - 15*60)) {
+      if (agentTimestamp < timestamp - 15 * 60) {
         return;
       }
 
@@ -171,7 +174,8 @@ function loadMessages() {
           message.name,
           message.text,
           message.profilePicUrl,
-          message.imageUrl
+          message.imageUrl,
+          message.customization
         );
       }
     });
@@ -286,8 +290,13 @@ function getFAQAnswer(results) {
   try {
     return results[0].faq;
   } catch (err) {
-    hasAgentRequest = true;
+    const customization = JSON.stringify({
+      type: "buttons",
+      values: ["yes", "no"]
+    });
+
     return {
+      customization,
       answer:
         "Sorry, I don't know the answer to that yet. Would you like to speak with a Gazoo Certified Agent?"
     };
@@ -336,23 +345,16 @@ async function getBotResponse({ message, KB = "spaceshipKB" }) {
   }
 }
 
-async function onAgentResponse(message) {
-  hasAgentRequest = false;
-  clearMessageField();
-
-  const results = await getBotResponse({ message, KB: "responseKB" });
-
-  var { answer, question } = getFAQAnswer(results);
-  console.log(results, question, answer);
-
-  if (answer === "yes") {
-    message = "Okay we will connect you with an agent shortly.";
+async function onAgentResponse(value) {
+  let message;
+  if (value === "yes") {
+    message = "Okay. An agent is going to assist you shortly.";
   } else {
-    message = "No problem. Do you have any other questions?";
+    message =
+      "No problem. Do you have any other concerns or questions I could help you with?";
   }
   saveMessage({
     answer: message,
-    question,
     // Send as Gazoo
     userName: genesysAPI.botname,
     profile: gazooProfile
@@ -366,10 +368,6 @@ async function onMessageFormSubmit(e) {
   let message = messageInputElement.value;
   clearMessageField();
 
-  if (hasAgentRequest) {
-    onAgentResponse(message);
-    return;
-  }
   // Check that the user entered a message and is signed in.
   if (message && checkSignedInWithMessage()) {
     agentIsTyping.style.display = "block";
@@ -377,11 +375,13 @@ async function onMessageFormSubmit(e) {
     const results = await getBotResponse({ message });
 
     agentIsTyping.style.display = "none";
-    var { answer, question } = getFAQAnswer(results);
-    console.log(results, question, answer);
+    var { answer, question, customization } = getFAQAnswer(results);
+    console.log(results, question, answer, customization);
+
     saveMessage({
       answer,
       question,
+      customization,
       // Send as Gazoo
       userName: genesysAPI.botname,
       profile: gazooProfile
@@ -525,7 +525,15 @@ function createAndInsertMessage(id, timestamp) {
 }
 
 // Displays a Message in the UI.
-function displayMessage(id, timestamp, name, text, picUrl, imageUrl, fromId) {
+function displayMessage(
+  id,
+  timestamp,
+  name,
+  text,
+  picUrl,
+  imageUrl,
+  customization
+) {
   var div =
     document.getElementById(id) || createAndInsertMessage(id, timestamp);
 
@@ -553,6 +561,22 @@ function displayMessage(id, timestamp, name, text, picUrl, imageUrl, fromId) {
     messageElement.innerHTML = "";
     messageElement.appendChild(image);
   }
+
+  if (customization) {
+    customization = JSON.parse(customization);
+    if (customization.type === "buttons") {
+      customization.values.forEach(value => {
+        var button = document.createElement("button");
+        button.textContent = value;
+        button.setAttribute("class", "yes-no");
+        button.onclick = function() {
+          onAgentResponse(value);
+        };
+        messageElement.appendChild(button);
+      });
+    }
+  }
+
   // Show the card fading-in and scroll to view the new message.
   setTimeout(function() {
     div.classList.add("visible");
