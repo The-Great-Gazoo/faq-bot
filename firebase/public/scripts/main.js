@@ -15,6 +15,8 @@
  */
 "use strict";
 
+var isLoaded = false;
+
 // Signs-in Friendly Chat.
 let genesysAPI;
 
@@ -48,6 +50,11 @@ function getUserName() {
   return firebase.auth().currentUser.displayName;
 }
 
+// Returns the signed-in users' ID
+function getUserID() {
+  return firebase.auth().currentUser.uid;
+}
+
 // Returns true if a user is signed-in.
 function isUserSignedIn() {
   return !!firebase.auth().currentUser;
@@ -58,6 +65,8 @@ function saveMessage(messageText) {
   // Add a new message entry to the database.
   return firebase
     .firestore()
+    .collection("users")
+    .doc(getUserID())
     .collection("messages")
     .add({
       name: getUserName(),
@@ -75,6 +84,8 @@ function loadMessages() {
   // Create the query to load the last 12 messages and listen for new ones.
   var query = firebase
     .firestore()
+    .collection("users")
+    .doc(getUserID())
     .collection("messages")
     .orderBy("timestamp", "desc")
     .limit(12);
@@ -116,6 +127,8 @@ function saveImageMessage(file) {
   // 1 - We add a message with a loading icon that will get updated with the shared image.
   firebase
     .firestore()
+    .collection("users")
+    .doc(getUserID())
     .collection("messages")
     .add({
       name: getUserName(),
@@ -310,6 +323,10 @@ function authStateObserver(user) {
 
     // Show sign-in button.
     signInButtonElement.removeAttribute("hidden");
+  }
+  if (!isLoaded) {
+    isLoaded = true;
+    loadMessages();
   }
 }
 
@@ -507,6 +524,3 @@ var firestore = firebase.firestore();
 
 // TODO: Enable Firebase Performance Monitoring.
 firebase.performance();
-
-// We load currently existing chat messages and listen to new ones.
-loadMessages();
