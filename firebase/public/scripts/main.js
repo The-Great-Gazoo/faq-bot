@@ -147,7 +147,8 @@ function saveMessage({
   customization,
   confidence,
   uid = getUserID(),
-  agentRequest
+  agentRequest,
+  recipientName = getUserName()
 }) {
   // Add a new message entry to the database.
   const response = {
@@ -155,7 +156,7 @@ function saveMessage({
     name: userName,
     text: answer,
     profilePicUrl: profile,
-    senderName: getUserName(),
+    recipientName,
     timestamp: firebase.firestore.FieldValue.serverTimestamp()
   };
   if (question) {
@@ -237,7 +238,7 @@ function loadMessages() {
               message.customization,
               message.confidence,
               message.fromUid,
-              message.senderName
+              message.recipientName
             );
           }
         }
@@ -411,7 +412,7 @@ async function getBotResponse({ message, KB = "spaceshipKB" }) {
   }
 }
 
-async function onAgentJoin(value, fromUid) {
+async function onAgentJoin(value, fromUid, recipientName) {
   let message;
   if (value === "yes") {
     message = "Okay, connecting...";
@@ -442,7 +443,8 @@ async function onAgentJoin(value, fromUid) {
     saveMessage({
       answer: "Hi $user, how can I help you?",
       uid: fromUid,
-      agentRequest: true
+      agentRequest: true,
+      recipientName
     });
 
     var queryMessages = firebase
@@ -468,14 +470,15 @@ async function onAgentJoin(value, fromUid) {
             message.imageUrl,
             message.customization,
             message.confidence,
-            message.fromUid
+            message.fromUid,
+            message.recipientName
           );
         }
       });
     });
   }
 }
-async function onAgentResponse(value) {
+async function onAgentResponse(value, recipientName) {
   let message;
   if (value === "yes") {
     message = "Okay. An agent is going to assist you shortly.";
@@ -536,7 +539,8 @@ async function onAgentResponse(value) {
             userName: genesysAPI.botname,
             profile: gazooProfile,
             customization,
-            agentRequest: true
+            agentRequest: true,
+            recipientName
           });
         }
       });
@@ -733,7 +737,7 @@ function displayMessage(
   customization,
   confidence,
   fromUid,
-  senderName
+  recipientName
 ) {
   var div =
     document.getElementById(id) || createAndInsertMessage(id, timestamp);
@@ -751,7 +755,7 @@ function displayMessage(
     // If the message is text.
     text = text.replace(
       "$user",
-      senderName ? `<strong>${senderName}</strong>` : "user"
+      recipientName ? `<strong>${recipientName}</strong>` : "user"
     );
     text = text.replace(
       "$date",
@@ -793,9 +797,9 @@ function displayMessage(
         button.setAttribute("class", "yes-no");
         button.onclick = function() {
           if (customization.type === "buttons-request-agent") {
-            onAgentResponse(value);
+            onAgentResponse(value, recipientName);
           } else if (customization.type === "buttons-join-agent") {
-            onAgentJoin(value, fromUid);
+            onAgentJoin(value, fromUid, recipientName);
           }
         };
         messageElement.appendChild(button);
